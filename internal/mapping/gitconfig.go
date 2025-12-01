@@ -73,10 +73,10 @@ func generateProfileConfig(prof *profile.Profile) (string, error) {
 	configPath := filepath.Join(home, fmt.Sprintf(".gitconfig-%s", prof.Name))
 
 	var config strings.Builder
-	config.WriteString(fmt.Sprintf("[user]\n"))
+	config.WriteString("[user]\n")
 	config.WriteString(fmt.Sprintf("    name = %s\n", prof.Name))
 	config.WriteString(fmt.Sprintf("    email = %s\n", prof.Email))
-	
+
 	if prof.GPGKeyID != "" {
 		config.WriteString(fmt.Sprintf("    signingkey = %s\n", prof.GPGKeyID))
 	}
@@ -85,7 +85,7 @@ func generateProfileConfig(prof *profile.Profile) (string, error) {
 	if prof.SSHKeyPath != "" {
 		// Use core.sshCommand to specify the SSH key
 		// This approach works with Git's SSH URL rewriting
-		config.WriteString(fmt.Sprintf("\n[core]\n"))
+		config.WriteString("\n[core]\n")
 		config.WriteString(fmt.Sprintf("    sshCommand = ssh -i %s -F /dev/null\n", prof.SSHKeyPath))
 	}
 
@@ -191,7 +191,7 @@ func removeIncludeIfBlock(dir string) error {
 			existingDir := matches[1]
 			normalizedExisting, _ := utils.NormalizePath(existingDir)
 			normalizedExisting = utils.EnsureTrailingSlash(normalizedExisting)
-			
+
 			if normalizedExisting == dir {
 				// Skip this includeIf line and the next path line
 				skipNext = true
@@ -235,4 +235,3 @@ func getGitConfigPath() (string, error) {
 	}
 	return filepath.Join(home, ".gitconfig"), nil
 }
-
