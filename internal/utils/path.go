@@ -51,3 +51,23 @@ func GetHomeDir() (string, error) {
 	return os.UserHomeDir()
 }
 
+// ExpandPath expands ~ in a path to the user's home directory.
+// Unlike NormalizePath, this does not resolve symlinks or make the path absolute.
+func ExpandPath(path string) (string, error) {
+	if path == "" {
+		return path, nil
+	}
+
+	// Expand ~ to home directory
+	if strings.HasPrefix(path, "~") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		// Replace only the first ~ with home directory
+		path = strings.Replace(path, "~", home, 1)
+	}
+
+	return path, nil
+}
+

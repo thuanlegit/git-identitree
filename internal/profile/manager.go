@@ -3,6 +3,8 @@ package profile
 import (
 	"fmt"
 	"os"
+
+	"git-identitree/internal/utils"
 )
 
 // Manager handles profile CRUD operations.
@@ -45,7 +47,11 @@ func (m *Manager) AddProfile(profile Profile) error {
 
 	// Validate SSH key path if provided
 	if profile.SSHKeyPath != "" {
-		if _, err := os.Stat(profile.SSHKeyPath); os.IsNotExist(err) {
+		expandedPath, err := utils.ExpandPath(profile.SSHKeyPath)
+		if err != nil {
+			return fmt.Errorf("failed to expand SSH key path: %w", err)
+		}
+		if _, err := os.Stat(expandedPath); os.IsNotExist(err) {
 			return fmt.Errorf("SSH key path does not exist: %s", profile.SSHKeyPath)
 		}
 	}
@@ -60,7 +66,11 @@ func (m *Manager) UpdateProfile(name string, profile Profile) error {
 		if m.profiles[i].Name == name {
 			// Validate SSH key path if provided
 			if profile.SSHKeyPath != "" {
-				if _, err := os.Stat(profile.SSHKeyPath); os.IsNotExist(err) {
+				expandedPath, err := utils.ExpandPath(profile.SSHKeyPath)
+				if err != nil {
+					return fmt.Errorf("failed to expand SSH key path: %w", err)
+				}
+				if _, err := os.Stat(expandedPath); os.IsNotExist(err) {
 					return fmt.Errorf("SSH key path does not exist: %s", profile.SSHKeyPath)
 				}
 			}

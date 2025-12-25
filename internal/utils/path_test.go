@@ -235,3 +235,101 @@ func TestGetHomeDir_Error(t *testing.T) {
 	}
 }
 
+func TestExpandPath(t *testing.T) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("Failed to get home directory: %v", err)
+	}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+		wantErr  bool
+	}{
+		{
+			name:     "expand tilde",
+			input:    "~/.ssh/id_rsa",
+			expected: filepath.Join(home, ".ssh/id_rsa"),
+			wantErr:  false,
+		},
+		{
+			name:     "expand tilde with subpath",
+			input:    "~/Documents/test.txt",
+			expected: filepath.Join(home, "Documents/test.txt"),
+			wantErr:  false,
+		},
+		{
+			name:     "tilde only",
+			input:    "~",
+			expected: home,
+			wantErr:  false,
+		},
+		{
+			name:     "tilde with slash",
+			input:    "~/",
+			expected: home + "/",
+			wantErr:  false,
+		},
+		{
+			name:     "absolute path without tilde",
+			input:    "/tmp/test",
+			expected: "/tmp/test",
+			wantErr:  false,
+		},
+		{
+			name:     "relative path without tilde",
+			input:    "test/file.txt",
+			expected: "test/file.txt",
+			wantErr:  false,
+		},
+		{
+			name:     "tilde in middle (should not expand)",
+			input:    "/tmp/~test",
+			expected: "/tmp/~test",
+			wantErr:  false,
+		},
+		{
+			name:     "empty path",
+			input:    "",
+			expected: "",
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ExpandPath(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExpandPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.expected {
+				t.Errorf("ExpandPath() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestExpandPath_ErrorHandling(t *testing.T) {
+	// Save original HOME
+	originalHome := os.Getenv("HOME")
+	defer os.Setenv("HOME", originalHome)
+
+	// Set invalid HOME (empty string)
+	os.Setenv("HOME", "")
+
+	// Test that tilde expansion handles error
+	_, err := ExpandPath("~/test")
+	// On Unix systems, UserHomeDir() might still work
+	// On some systems it might fail
+	if err != nil {
+		t.Logf("ExpandPath() handled empty HOME as expected: %v", err)
+	} else {
+		t.Log("ExpandPath() succeeded despite empty HOME (system fallback)")
+	}
+
+	// Restore HOME
+	os.Setenv("HOME", originalHome)
+}
+

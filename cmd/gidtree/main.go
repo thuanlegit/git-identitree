@@ -14,7 +14,7 @@ import (
 )
 
 // version can be set at build time using -ldflags "-X main.version=x.y.z"
-var version = "1.0.0"
+var version = "1.1.0"
 
 var rootCmd = &cobra.Command{
 	Use:   "gidtree",
@@ -104,6 +104,18 @@ var profileDeleteCmd = &cobra.Command{
 	Short: "Delete a profile",
 	Long:  "Delete a profile. Will fail if the profile is mapped to any directories.",
 	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		manager, err := profile.NewManager()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		profiles := manager.ListProfiles()
+		var names []string
+		for _, p := range profiles {
+			names = append(names, p.Name)
+		}
+		return names, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		profileName := args[0]
 
@@ -137,6 +149,25 @@ var mapCmd = &cobra.Command{
 	Short: "Map a profile to a directory",
 	Long:  "Associate a profile with a target directory path. Git will automatically use this profile when working in that directory.",
 	Args:  cobra.ExactArgs(2),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			// First argument: profile name - get list of profiles
+			manager, err := profile.NewManager()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			profiles := manager.ListProfiles()
+			var names []string
+			for _, p := range profiles {
+				names = append(names, p.Name)
+			}
+			return names, cobra.ShellCompDirectiveNoFileComp
+		} else if len(args) == 1 {
+			// Second argument: directory path - enable directory completion
+			return nil, cobra.ShellCompDirectiveFilterDirs
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		profileName := args[0]
 		dir := args[1]
@@ -165,6 +196,10 @@ var unmapCmd = &cobra.Command{
 	Short: "Remove a directory mapping",
 	Long:  "Remove the association between a directory and its profile",
 	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		// Enable directory completion
+		return nil, cobra.ShellCompDirectiveFilterDirs
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dir := args[0]
 
@@ -201,6 +236,20 @@ var sshLoadCmd = &cobra.Command{
 	Short: "Load SSH key for a profile",
 	Long:  "Manually load the SSH key associated with a profile into the SSH agent",
 	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		manager, err := profile.NewManager()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		profiles := manager.ListProfiles()
+		var names []string
+		for _, p := range profiles {
+			if p.SSHKeyPath != "" {
+				names = append(names, p.Name)
+			}
+		}
+		return names, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		profileName := args[0]
 
@@ -232,6 +281,20 @@ var sshUnloadCmd = &cobra.Command{
 	Short: "Unload SSH key for a profile",
 	Long:  "Manually unload the SSH key associated with a profile from the SSH agent",
 	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		manager, err := profile.NewManager()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		profiles := manager.ListProfiles()
+		var names []string
+		for _, p := range profiles {
+			if p.SSHKeyPath != "" {
+				names = append(names, p.Name)
+			}
+		}
+		return names, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		profileName := args[0]
 
@@ -336,6 +399,9 @@ func init() {
 	rootCmd.AddCommand(sshCmd)
 	rootCmd.AddCommand(activateCmd)
 	rootCmd.AddCommand(versionCmd)
+
+	// Enable shell completion
+	rootCmd.CompletionOptions.DisableDefaultCmd = false
 }
 
 func main() {

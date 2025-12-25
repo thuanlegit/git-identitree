@@ -383,3 +383,120 @@ func TestNewManager_LoadError(t *testing.T) {
 		t.Error("NewManager() should fail when profiles file is unreadable")
 	}
 }
+
+func TestManager_AddProfile_SSHKeyPathWithTilde(t *testing.T) {
+	tmpDir, cleanup := setupTestEnv(t)
+	defer cleanup()
+
+	manager, err := NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Create a test SSH key file in the temp home directory
+	sshDir := tmpDir + "/.ssh"
+	if err := os.MkdirAll(sshDir, 0755); err != nil {
+		t.Fatalf("Failed to create .ssh directory: %v", err)
+	}
+
+	keyPath := sshDir + "/id_rsa_test"
+	if err := os.WriteFile(keyPath, []byte("test key"), 0600); err != nil {
+		t.Fatalf("Failed to create test key file: %v", err)
+	}
+
+	// Test with tilde path
+	profile := Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		SSHKeyPath: "~/.ssh/id_rsa_test",
+	}
+
+	// This should succeed because ExpandPath will expand ~ to tmpDir
+	if err := manager.AddProfile(profile); err != nil {
+		t.Fatalf("AddProfile() with tilde path error = %v", err)
+	}
+
+	// Verify profile was added with tilde path (not expanded in storage)
+	got, err := manager.GetProfile("test")
+	if err != nil {
+		t.Fatalf("GetProfile() error = %v", err)
+	}
+
+	if got.SSHKeyPath != "~/.ssh/id_rsa_test" {
+		t.Errorf("Profile SSHKeyPath = %v, want ~/ .ssh/id_rsa_test", got.SSHKeyPath)
+	}
+}
+
+func TestManager_AddProfile_SSHKeyPathWithTilde_NonExistent(t *testing.T) {
+	_, cleanup := setupTestEnv(t)
+	defer cleanup()
+
+	manager, err := NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Test with tilde path that doesn't exist
+	profile := Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		SSHKeyPath: "~/.ssh/nonexistent_key",
+	}
+
+	// This should fail because the expanded path doesn't exist
+	if err := manager.AddProfile(profile); err == nil {
+		t.Error("AddProfile() should fail for non-existent SSH key even with tilde")
+	}
+}
+
+func TestManager_UpdateProfile_SSHKeyPathWithTilde(t *testing.T) {
+	tmpDir, cleanup := setupTestEnv(t)
+	defer cleanup()
+
+	manager, err := NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Add initial profile without SSH key
+	profile := Profile{
+		Name:  "test",
+		Email: "test@example.com",
+	}
+
+	if err := manager.AddProfile(profile); err != nil {
+		t.Fatalf("AddProfile() error = %v", err)
+	}
+
+	// Create a test SSH key file
+	sshDir := tmpDir + "/.ssh"
+	if err := os.MkdirAll(sshDir, 0755); err != nil {
+		t.Fatalf("Failed to create .ssh directory: %v", err)
+	}
+
+	keyPath := sshDir + "/id_rsa_updated"
+	if err := os.WriteFile(keyPath, []byte("test key"), 0600); err != nil {
+		t.Fatalf("Failed to create test key file: %v", err)
+	}
+
+	// Update with tilde path
+	updated := Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		SSHKeyPath: "~/.ssh/id_rsa_updated",
+	}
+
+	if err := manager.UpdateProfile("test", updated); err != nil {
+		t.Fatalf("UpdateProfile() with tilde path error = %v", err)
+	}
+
+	// Verify profile was updated
+	got, err := manager.GetProfile("test")
+	if err != nil {
+		t.Fatalf("GetProfile() error = %v", err)
+	}
+
+	if got.SSHKeyPath != "~/.ssh/id_rsa_updated" {
+		t.Errorf("Profile SSHKeyPath = %v, want ~/.ssh/id_rsa_updated", got.SSHKeyPath)
+	}
+}

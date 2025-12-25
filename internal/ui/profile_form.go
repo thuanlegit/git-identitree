@@ -2,10 +2,41 @@ package ui
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
 	"git-identitree/internal/profile"
 	"github.com/charmbracelet/huh"
 )
+
+// getSSHKeySuggestions returns a list of SSH key paths from ~/.ssh directory.
+func getSSHKeySuggestions() []string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return []string{}
+	}
+
+	sshDir := filepath.Join(homeDir, ".ssh")
+	entries, err := os.ReadDir(sshDir)
+	if err != nil {
+		return []string{}
+	}
+
+	var suggestions []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		// Filter for common private key files (exclude .pub files)
+		if !strings.HasSuffix(name, ".pub") &&
+			(strings.HasPrefix(name, "id_") || name == "github" || name == "gitlab" || name == "bitbucket") {
+			suggestions = append(suggestions, filepath.Join("~/.ssh", name))
+		}
+	}
+
+	return suggestions
+}
 
 // CreateProfileForm creates an interactive form for profile creation.
 func CreateProfileForm() (*profile.Profile, error) {
@@ -40,6 +71,8 @@ func CreateProfileForm() (*profile.Profile, error) {
 			huh.NewInput().
 				Title("SSH Key Path").
 				Description("Path to SSH private key (optional)").
+				Placeholder("~/.ssh/id_rsa").
+				Suggestions(getSSHKeySuggestions()).
 				Value(&sshKeyPath),
 			huh.NewInput().
 				Title("GPG Key ID").

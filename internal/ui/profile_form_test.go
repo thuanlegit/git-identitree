@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"git-identitree/internal/profile"
@@ -40,7 +42,7 @@ func createTestProfile(name, email, sshKeyPath, gpgKeyID string) *profile.Profil
 
 func TestCreateTestProfile(t *testing.T) {
 	prof := createTestProfile("test", "test@example.com", "/path/to/key", "ABC123")
-	
+
 	if prof.Name != "test" {
 		t.Errorf("Profile name = %v, want test", prof.Name)
 	}
@@ -52,6 +54,89 @@ func TestCreateTestProfile(t *testing.T) {
 	}
 	if prof.GPGKeyID != "ABC123" {
 		t.Errorf("Profile GPGKeyID = %v, want ABC123", prof.GPGKeyID)
+	}
+}
+
+func TestGetSSHKeySuggestions(t *testing.T) {
+	// Test with a mock .ssh directory
+	tmpDir, err := os.MkdirTemp("", "gidtree-ssh-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Override HOME to use temp directory
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", originalHome)
+
+	sshDir := filepath.Join(tmpDir, ".ssh")
+	if err := os.MkdirAll(sshDir, 0755); err != nil {
+		t.Fatalf("Failed to create .ssh directory: %v", err)
+	}
+
+	// Create test SSH key files
+	testFiles := []string{
+		"id_rsa",
+		"id_ed25519",
+		"id_rsa.pub",  // Should be excluded
+		"id_ecdsa",
+		"github",
+		"gitlab",
+		"config",      // Should be excluded (doesn't match patterns)
+		"known_hosts", // Should be excluded
+	}
+
+	for _, filename := range testFiles {
+		filePath := filepath.Join(sshDir, filename)
+		if err := os.WriteFile(filePath, []byte("test"), 0600); err != nil {
+			t.Fatalf("Failed to create test file %s: %v", filename, err)
+		}
+	}
+
+	// Get suggestions
+	suggestions := getSSHKeySuggestions()
+
+	// Expected suggestions (excluding .pub files and non-matching files)
+	expected := map[string]bool{
+		"~/.ssh/id_rsa":     true,
+		"~/.ssh/id_ed25519": true,
+		"~/.ssh/id_ecdsa":   true,
+		"~/.ssh/github":     true,
+		"~/.ssh/gitlab":     true,
+	}
+
+	// Verify suggestions
+	if len(suggestions) != len(expected) {
+		t.Errorf("Expected %d suggestions, got %d: %v", len(expected), len(suggestions), suggestions)
+	}
+
+	for _, suggestion := range suggestions {
+		if !expected[suggestion] {
+			t.Errorf("Unexpected suggestion: %s", suggestion)
+		}
+	}
+}
+
+func TestGetSSHKeySuggestions_NoSSHDir(t *testing.T) {
+	// Test when .ssh directory doesn't exist
+	tmpDir, err := os.MkdirTemp("", "gidtree-ssh-test-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Override HOME to use temp directory (without .ssh)
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", originalHome)
+
+	// Get suggestions
+	suggestions := getSSHKeySuggestions()
+
+	// Should return empty list when .ssh directory doesn't exist
+	if len(suggestions) != 0 {
+		t.Errorf("Expected 0 suggestions when .ssh doesn't exist, got %d", len(suggestions))
 	}
 }
 

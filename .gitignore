@@ -1,5 +1,4 @@
 # Binaries
-gidtree
 *.exe
 *.exe~
 *.dll
@@ -28,4 +27,3 @@ go.work
 # OS files
 .DS_Store
 Thumbs.db
-
