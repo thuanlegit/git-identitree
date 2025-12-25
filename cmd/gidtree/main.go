@@ -16,7 +16,7 @@ import (
 )
 
 // version can be set at build time using -ldflags "-X main.version=x.y.z"
-var version = "1.2.1"
+var version = "1.2.3"
 
 var rootCmd = &cobra.Command{
 	Use:   "gidtree",
