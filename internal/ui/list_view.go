@@ -72,7 +72,7 @@ func (m *ListModel) View() string {
 	b.WriteString("\n")
 
 	// Table header
-	header := headerStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-40s", "Name", "Author Name", "Email", "SSH Key Path"))
+	header := headerStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-20s %-40s", "Name", "Author Name", "Email", "GPG Key", "SSH Key Path"))
 	b.WriteString(header)
 	b.WriteString("\n")
 
@@ -83,7 +83,11 @@ func (m *ListModel) View() string {
 		if sshKey == "" {
 			sshKey = "(none)"
 		}
-		row := rowStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-40s", prof.Name, authorName, prof.Email, sshKey))
+		gpgKey := prof.GPGKeyID
+		if gpgKey == "" {
+			gpgKey = "(none)"
+		}
+		row := rowStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-20s %-40s", prof.Name, authorName, prof.Email, gpgKey, sshKey))
 		b.WriteString(row)
 		b.WriteString("\n")
 	}
