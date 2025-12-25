@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/Go-1.24+-blue.svg)](https://golang.org)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/ryleth)
 
 A powerful CLI tool to manage multiple Git identities and automatically switch between them based on directory context using Git's native `includeIf` mechanism.
 
@@ -22,6 +23,20 @@ A powerful CLI tool to manage multiple Git identities and automatically switch b
 ⚡ **Shell Completion** - Tab completion for bash, zsh, fish, and PowerShell
 
 🛡️ **Safe Operations** - Prevents accidental deletion of mapped profiles with auto-unmap option
+
+---
+
+<p align="center">
+  <strong>☕ Enjoying Git Identitree? Consider buying me a coffee!</strong>
+</p>
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/ryleth" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60px" width="217px">
+  </a>
+</p>
+
+---
 
 ## Installation
 
@@ -420,7 +435,19 @@ MIT License - see [LICENSE](LICENSE) file for details
 - UI powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea) and [Huh](https://github.com/charmbracelet/huh)
 - Inspired by the need to manage multiple Git identities seamlessly
 
-## Support
+## Support the Project
+
+If you find Git Identitree useful, please consider supporting its development!
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/ryleth" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60px" width="217px">
+  </a>
+</p>
+
+Your support helps maintain and improve this project. Thank you! ☕
+
+## Get Help
 
 - 🐛 [Report a Bug](https://github.com/thuanlegit/git-identitree/issues)
 - 💡 [Request a Feature](https://github.com/thuanlegit/git-identitree/issues)
