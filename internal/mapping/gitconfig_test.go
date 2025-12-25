@@ -216,8 +216,14 @@ func TestMapProfileToDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp key file: %v", err)
 	}
-	tmpKey.Close()
-	defer os.Remove(tmpKey.Name())
+	if err := tmpKey.Close(); err != nil {
+		t.Fatalf("Failed to close temp key file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpKey.Name()); err != nil {
+			t.Logf("Failed to remove temp key file: %v", err)
+		}
+	}()
 
 	prof := &profile.Profile{
 		Name:       "test",
@@ -520,19 +526,22 @@ func TestUnmapDirectory_NonExistent(t *testing.T) {
 func TestGetGitConfigPath_Error(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME to test error path
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	// This should fail because we can't get home directory
 	_, err := getGitConfigPath()
 	if err == nil {
 		t.Error("getGitConfigPath() should fail with invalid HOME")
 	}
-
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
 }
 
 func TestAddIncludeIfBlock_UpdatePathLine(t *testing.T) {
@@ -656,7 +665,11 @@ func TestAddIncludeIfBlock_ReadError(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	testDir := filepath.Join(tmpDir, "project")
 	if err := os.MkdirAll(testDir, 0755); err != nil {
@@ -720,7 +733,11 @@ func TestRemoveIncludeIfBlock_OpenError(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	testDir := filepath.Join(tmpDir, "project")
 	if err := os.MkdirAll(testDir, 0755); err != nil {
@@ -782,10 +799,16 @@ func TestWriteGitConfig_WriteError(t *testing.T) {
 func TestGenerateProfileConfig_HomeDirError(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	prof := &profile.Profile{
 		Name:  "test",
@@ -796,9 +819,6 @@ func TestGenerateProfileConfig_HomeDirError(t *testing.T) {
 	if err == nil {
 		t.Error("generateProfileConfig() should fail with invalid HOME")
 	}
-
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
 }
 
 func TestMapProfileToDirectory_ParseError(t *testing.T) {
@@ -812,7 +832,11 @@ func TestMapProfileToDirectory_ParseError(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	prof := &profile.Profile{
 		Name:  "test",
@@ -833,10 +857,16 @@ func TestMapProfileToDirectory_ParseError(t *testing.T) {
 func TestMapProfileToDirectory_GenerateConfigError(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	prof := &profile.Profile{
 		Name:  "test",
@@ -847,7 +877,4 @@ func TestMapProfileToDirectory_GenerateConfigError(t *testing.T) {
 	if err == nil {
 		t.Error("MapProfileToDirectory() should fail with invalid HOME")
 	}
-
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
 }

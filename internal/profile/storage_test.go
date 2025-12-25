@@ -14,11 +14,17 @@ func setupTestEnv(t *testing.T) (string, func()) {
 
 	// Override home directory for testing
 	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
+	if err := os.Setenv("HOME", tmpDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	cleanup := func() {
-		os.Setenv("HOME", originalHome)
-		os.RemoveAll(tmpDir)
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp dir: %v", err)
+		}
 	}
 
 	return tmpDir, cleanup
@@ -167,7 +173,11 @@ func TestSaveProfiles_WriteError(t *testing.T) {
 	if err := os.WriteFile(profilesDir, []byte("file"), 0644); err != nil {
 		t.Fatalf("Failed to create file: %v", err)
 	}
-	defer os.RemoveAll(profilesDir)
+	defer func() {
+		if err := os.RemoveAll(profilesDir); err != nil {
+			t.Logf("Failed to remove profiles directory: %v", err)
+		}
+	}()
 
 	profiles := []Profile{
 		{Name: "test", Email: "test@example.com"},
@@ -182,10 +192,16 @@ func TestSaveProfiles_WriteError(t *testing.T) {
 func TestGetProfilesPath_HomeDirError(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	_, err := GetProfilesPath()
 	if err == nil {
@@ -194,17 +210,22 @@ func TestGetProfilesPath_HomeDirError(t *testing.T) {
 		t.Logf("GetProfilesPath() handled invalid HOME: %v", err)
 	}
 
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
+	// Restore HOME already handled by defer
 }
 
 func TestGetProfilesDir_HomeDirError(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	_, err := GetProfilesDir()
 	if err == nil {
@@ -213,8 +234,7 @@ func TestGetProfilesDir_HomeDirError(t *testing.T) {
 		t.Logf("GetProfilesDir() handled invalid HOME: %v", err)
 	}
 
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
+	// Restore HOME already handled by defer
 }
 
 func TestLoadProfiles_ReadError(t *testing.T) {
@@ -233,7 +253,11 @@ func TestLoadProfiles_ReadError(t *testing.T) {
 	if err := os.MkdirAll(profilesPath, 0755); err != nil {
 		t.Fatalf("Failed to create directory: %v", err)
 	}
-	defer os.RemoveAll(profilesPath)
+	defer func() {
+		if err := os.RemoveAll(profilesPath); err != nil {
+			t.Logf("Failed to remove profiles path: %v", err)
+		}
+	}()
 
 	_, err = LoadProfiles()
 	// Should handle gracefully (treat as non-existent)
@@ -278,7 +302,9 @@ func TestSaveProfiles_CreateDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetProfilesDir() error = %v", err)
 	}
-	os.RemoveAll(profilesDir)
+	if err := os.RemoveAll(profilesDir); err != nil {
+		t.Fatalf("Failed to remove profiles directory: %v", err)
+	}
 
 	profiles := []Profile{
 		{Name: "test", Email: "test@example.com"},

@@ -20,11 +20,17 @@ func setupCLITestEnv(t *testing.T) (string, func()) {
 
 	// Override home directory for testing
 	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
+	if err := os.Setenv("HOME", tmpDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	cleanup := func() {
-		os.Setenv("HOME", originalHome)
-		os.RemoveAll(tmpDir)
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
 	}
 
 	return tmpDir, cleanup
@@ -519,7 +525,9 @@ func TestVersionCommand(t *testing.T) {
 			versionCmd.Run(versionCmd, []string{})
 
 			// Restore stdout and read captured output
-			w.Close()
+			if err := w.Close(); err != nil {
+				t.Fatalf("Failed to close pipe: %v", err)
+			}
 			os.Stdout = oldStdout
 
 			var buf bytes.Buffer

@@ -34,7 +34,9 @@ func ParseMappings() ([]Mapping, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open git config: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var mappings []Mapping
 	scanner := bufio.NewScanner(file)

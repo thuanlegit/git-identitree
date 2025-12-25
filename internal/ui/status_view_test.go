@@ -19,11 +19,17 @@ func setupStatusTestEnv(t *testing.T) (string, func()) {
 
 	// Override home directory for testing
 	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
+	if err := os.Setenv("HOME", tmpDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	cleanup := func() {
-		os.Setenv("HOME", originalHome)
-		os.RemoveAll(tmpDir)
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
 	}
 
 	return tmpDir, cleanup
@@ -113,7 +119,11 @@ func TestNewStatusModel_NoMapping(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(testDir)
+	defer func() {
+		if err := os.RemoveAll(testDir); err != nil {
+			t.Logf("Failed to remove test directory: %v", err)
+		}
+	}()
 
 	originalDir, err := os.Getwd()
 	if err != nil {

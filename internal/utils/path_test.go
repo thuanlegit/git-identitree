@@ -136,7 +136,11 @@ func TestNormalizePath_SymlinkError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
+	}()
 
 	// Create a path that doesn't exist yet (EvalSymlinks will fail)
 	nonExistentPath := filepath.Join(tmpDir, "nonexistent", "path")
@@ -170,10 +174,16 @@ func TestNormalizePath_TildeInMiddle(t *testing.T) {
 func TestNormalizePath_HomeDirError(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 	
 	// Clear the home directory cache if any
 	// Test that tilde expansion fails gracefully
@@ -183,9 +193,6 @@ func TestNormalizePath_HomeDirError(t *testing.T) {
 	} else {
 		t.Logf("NormalizePath() handled invalid HOME as expected: %v", err)
 	}
-	
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
 }
 
 func TestEnsureTrailingSlash_AllSeparators(t *testing.T) {
@@ -221,7 +228,11 @@ func TestEnsureTrailingSlash_AllSeparators(t *testing.T) {
 func TestGetHomeDir_Error(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// On Unix systems, UserHomeDir() should still work even with empty HOME
 	// as it falls back to other methods
@@ -314,10 +325,16 @@ func TestExpandPath(t *testing.T) {
 func TestExpandPath_ErrorHandling(t *testing.T) {
 	// Save original HOME
 	originalHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", originalHome)
+	defer func() {
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+	}()
 
 	// Set invalid HOME (empty string)
-	os.Setenv("HOME", "")
+	if err := os.Setenv("HOME", ""); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	// Test that tilde expansion handles error
 	_, err := ExpandPath("~/test")
@@ -328,8 +345,5 @@ func TestExpandPath_ErrorHandling(t *testing.T) {
 	} else {
 		t.Log("ExpandPath() succeeded despite empty HOME (system fallback)")
 	}
-
-	// Restore HOME
-	os.Setenv("HOME", originalHome)
 }
 

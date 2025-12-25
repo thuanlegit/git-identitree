@@ -120,7 +120,9 @@ func addIncludeIfBlock(dir, configPath string) error {
 		for scanner.Scan() {
 			lines = append(lines, scanner.Text())
 		}
-		file.Close()
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("failed to close git config: %w", err)
+		}
 		if err := scanner.Err(); err != nil {
 			return fmt.Errorf("failed to read git config: %w", err)
 		}
@@ -166,7 +168,9 @@ func removeIncludeIfBlock(dir string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open git config: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var lines []string
 	scanner := bufio.NewScanner(file)

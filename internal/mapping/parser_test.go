@@ -18,13 +18,19 @@ func setupMappingTestEnv(t *testing.T) (string, string, func()) {
 
 	// Override home directory for testing
 	originalHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
+	if err := os.Setenv("HOME", tmpDir); err != nil {
+		t.Fatalf("Failed to set HOME: %v", err)
+	}
 
 	gitConfigPath := filepath.Join(tmpDir, ".gitconfig")
 
 	cleanup := func() {
-		os.Setenv("HOME", originalHome)
-		os.RemoveAll(tmpDir)
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.RemoveAll(tmpDir); err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
 	}
 
 	return tmpDir, gitConfigPath, cleanup
@@ -248,7 +254,11 @@ func TestParseMappings_ErrorReadingFile(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	_, err := ParseMappings()
 	if err == nil {
@@ -375,7 +385,11 @@ func TestIsProfileMapped_ParseError(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	_, err := IsProfileMapped("test")
 	if err == nil {
@@ -406,7 +420,11 @@ func TestGetMappingForDirectory_ParseError(t *testing.T) {
 	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
 		t.Fatalf("Failed to create git config directory: %v", err)
 	}
-	defer os.RemoveAll(gitConfigPath)
+	defer func() {
+		if err := os.RemoveAll(gitConfigPath); err != nil {
+			t.Logf("Failed to remove git config path: %v", err)
+		}
+	}()
 
 	testDir := filepath.Join(tmpDir, "project")
 	_, err := GetMappingForDirectory(testDir)

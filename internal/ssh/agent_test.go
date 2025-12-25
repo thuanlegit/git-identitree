@@ -40,11 +40,9 @@ func TestUnloadKeyForProfile(t *testing.T) {
 	}
 
 	// This will fail because the key doesn't exist, but tests the function logic
-	err := UnloadKeyForProfile(prof)
-	if err == nil {
-		// UnloadKey might succeed even if key doesn't exist (if it's not in agent)
-		// So we just check it doesn't panic
-	}
+	// UnloadKey might succeed even if key doesn't exist (if it's not in agent)
+	// So we just check it doesn't panic
+	_ = UnloadKeyForProfile(prof)
 
 	// Test with empty SSH key path
 	profNoKey := &profile.Profile{
@@ -80,8 +78,14 @@ func TestLoadKey_InvalidKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// This will fail because it's not a valid SSH key, but tests the path
 	err = LoadKey(tmpFile.Name())
@@ -117,8 +121,14 @@ func TestLoadKey_AlreadyLoaded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// First attempt to load (will likely fail because it's not a real key,
 	// but tests the path normalization and existence check)
@@ -144,8 +154,14 @@ func TestUnloadKey_FallbackPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// This will fail because it's not a valid SSH key,
 	// but tests the fingerprint extraction and fallback logic
@@ -169,8 +185,14 @@ func TestCheckKeyLoaded_InvalidKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// This will fail because it's not a valid SSH key
 	loaded, err := CheckKeyLoaded(tmpFile.Name())
@@ -185,8 +207,14 @@ func TestCheckKeyLoaded_SSHAgentNotRunning(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// This tests the path where SSH agent might not be running
 	// The function should handle this gracefully
@@ -203,8 +231,14 @@ func TestLoadKeyForProfile_WithSSHKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	prof := &profile.Profile{
 		Name:       "test",
@@ -226,8 +260,14 @@ func TestUnloadKeyForProfile_WithSSHKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	prof := &profile.Profile{
 		Name:       "test",
@@ -269,8 +309,14 @@ func TestUnloadKey_InvalidFingerprintFormat(t *testing.T) {
 	if _, err := tmpFile.WriteString("not a valid ssh key"); err != nil {
 		t.Fatalf("Failed to write to temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	if err := tmpFile.Close(); err != nil {
+		t.Fatalf("Failed to close temp file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			t.Logf("Failed to remove temp file: %v", err)
+		}
+	}()
 
 	// This should fail at fingerprint extraction
 	err = UnloadKey(tmpFile.Name())

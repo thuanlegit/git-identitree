@@ -19,8 +19,14 @@ func TestManager_AddProfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp key file: %v", err)
 	}
-	tmpKey.Close()
-	defer os.Remove(tmpKey.Name())
+	if err := tmpKey.Close(); err != nil {
+		t.Fatalf("Failed to close temp key file: %v", err)
+	}
+	defer func() {
+		if err := os.Remove(tmpKey.Name()); err != nil {
+			t.Logf("Failed to remove temp key file: %v", err)
+		}
+	}()
 
 	profile := Profile{
 		Name:       "test",
@@ -380,7 +386,11 @@ func TestNewManager_LoadError(t *testing.T) {
 	if err := os.MkdirAll(profilesPath, 0755); err != nil {
 		t.Fatalf("Failed to create directory: %v", err)
 	}
-	defer os.RemoveAll(profilesPath)
+	defer func() {
+		if err := os.RemoveAll(profilesPath); err != nil {
+			t.Logf("Failed to remove profiles path: %v", err)
+		}
+	}()
 
 	_, err = NewManager()
 	if err == nil {
