@@ -1,7 +1,7 @@
 # Git Identitree
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.25+-blue.svg)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.24+-blue.svg)](https://golang.org)
 
 A powerful CLI tool to manage multiple Git identities and automatically switch between them based on directory context using Git's native `includeIf` mechanism.
 
@@ -55,7 +55,7 @@ Download `gidtree-windows-amd64.exe` from the [releases page](https://github.com
 
 ### Build from Source
 
-Requires Go 1.25 or later:
+Requires Go 1.24 or later:
 
 ```bash
 go install github.com/thuanlegit/git-identitree/cmd/gidtree@latest
