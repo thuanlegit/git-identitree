@@ -530,3 +530,151 @@ func TestVersionCommandHelp(t *testing.T) {
 	}
 }
 
+func TestProfileUpdateCommand(t *testing.T) {
+	tmpDir, cleanup := setupCLITestEnv(t)
+	defer cleanup()
+
+	// Initialize
+	initCmd.SetArgs([]string{})
+	initCmd.Execute()
+
+	// Create a profile first
+	manager, err := profile.NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Create a test SSH key file
+	sshDir := filepath.Join(tmpDir, ".ssh")
+	if err := os.MkdirAll(sshDir, 0755); err != nil {
+		t.Fatalf("Failed to create .ssh directory: %v", err)
+	}
+
+	keyPath := filepath.Join(sshDir, "id_rsa_test")
+	if err := os.WriteFile(keyPath, []byte("test key"), 0600); err != nil {
+		t.Fatalf("Failed to create test key file: %v", err)
+	}
+
+	testProfile := profile.Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		SSHKeyPath: "~/.ssh/id_rsa_test",
+	}
+
+	if err := manager.AddProfile(testProfile); err != nil {
+		t.Fatalf("AddProfile() error = %v", err)
+	}
+
+	// Create updated key file
+	updatedKeyPath := filepath.Join(sshDir, "id_rsa_updated")
+	if err := os.WriteFile(updatedKeyPath, []byte("updated key"), 0600); err != nil {
+		t.Fatalf("Failed to create updated key file: %v", err)
+	}
+
+	// Update profile
+	updatedProfile := profile.Profile{
+		Name:       "test",
+		Email:      "updated@example.com",
+		AuthorName: "Test Author",
+		SSHKeyPath: "~/.ssh/id_rsa_updated",
+		GPGKeyID:   "GPG123",
+	}
+
+	if err := manager.UpdateProfile("test", updatedProfile); err != nil {
+		t.Fatalf("UpdateProfile() error = %v", err)
+	}
+
+	// Verify the update
+	got, err := manager.GetProfile("test")
+	if err != nil {
+		t.Fatalf("GetProfile() error = %v", err)
+	}
+
+	if got.Email != "updated@example.com" {
+		t.Errorf("Profile email = %v, want updated@example.com", got.Email)
+	}
+
+	if got.AuthorName != "Test Author" {
+		t.Errorf("Profile authorName = %v, want Test Author", got.AuthorName)
+	}
+
+	if got.SSHKeyPath != "~/.ssh/id_rsa_updated" {
+		t.Errorf("Profile sshKeyPath = %v, want ~/.ssh/id_rsa_updated", got.SSHKeyPath)
+	}
+
+	if got.GPGKeyID != "GPG123" {
+		t.Errorf("Profile gpgKeyID = %v, want GPG123", got.GPGKeyID)
+	}
+}
+
+func TestProfileUpdateCommand_NonExistent(t *testing.T) {
+	_, cleanup := setupCLITestEnv(t)
+	defer cleanup()
+
+	// Initialize
+	initCmd.SetArgs([]string{})
+	initCmd.Execute()
+
+	manager, err := profile.NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Try to update non-existent profile
+	_, err = manager.GetProfile("nonexistent")
+	if err == nil {
+		t.Error("GetProfile() should fail for non-existent profile")
+	}
+}
+
+func TestProfileUpdateCommandRegistered(t *testing.T) {
+	// Verify update command is registered with profile command
+	found := false
+	for _, cmd := range profileCmd.Commands() {
+		if cmd.Name() == "update" {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		t.Error("update command not registered with profile command")
+	}
+}
+
+func TestProfileUpdateCommand_SSHKeyValidation(t *testing.T) {
+	_, cleanup := setupCLITestEnv(t)
+	defer cleanup()
+
+	// Initialize
+	initCmd.SetArgs([]string{})
+	initCmd.Execute()
+
+	manager, err := profile.NewManager()
+	if err != nil {
+		t.Fatalf("NewManager() error = %v", err)
+	}
+
+	// Create a profile without SSH key
+	testProfile := profile.Profile{
+		Name:  "test",
+		Email: "test@example.com",
+	}
+
+	if err := manager.AddProfile(testProfile); err != nil {
+		t.Fatalf("AddProfile() error = %v", err)
+	}
+
+	// Try to update with non-existent SSH key
+	updatedProfile := profile.Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		SSHKeyPath: "~/.ssh/nonexistent_key",
+	}
+
+	// Should fail validation
+	if err := manager.UpdateProfile("test", updatedProfile); err == nil {
+		t.Error("UpdateProfile() should fail for non-existent SSH key")
+	}
+}
+

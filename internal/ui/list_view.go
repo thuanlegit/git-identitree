@@ -72,17 +72,18 @@ func (m *ListModel) View() string {
 	b.WriteString("\n")
 
 	// Table header
-	header := headerStyle.Render(fmt.Sprintf("%-20s %-40s %-50s", "Name", "Email", "SSH Key Path"))
+	header := headerStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-40s", "Name", "Author Name", "Email", "SSH Key Path"))
 	b.WriteString(header)
 	b.WriteString("\n")
 
 	// Table rows
 	for _, prof := range m.profiles {
+		authorName := prof.GetAuthorName()
 		sshKey := prof.SSHKeyPath
 		if sshKey == "" {
 			sshKey = "(none)"
 		}
-		row := rowStyle.Render(fmt.Sprintf("%-20s %-40s %-50s", prof.Name, prof.Email, sshKey))
+		row := rowStyle.Render(fmt.Sprintf("%-20s %-30s %-30s %-40s", prof.Name, authorName, prof.Email, sshKey))
 		b.WriteString(row)
 		b.WriteString("\n")
 	}

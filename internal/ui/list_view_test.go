@@ -86,7 +86,7 @@ func TestListModel_View_WithProfiles(t *testing.T) {
 
 	model := NewListModel(profiles)
 	view := model.View()
-	
+
 	if !strings.Contains(view, "test1") {
 		t.Error("ListModel.View() should contain profile name")
 	}
@@ -98,6 +98,67 @@ func TestListModel_View_WithProfiles(t *testing.T) {
 	}
 	if !strings.Contains(view, "(none)") {
 		t.Error("ListModel.View() should show '(none)' for profiles without SSH key")
+	}
+	if !strings.Contains(view, "Author Name") {
+		t.Error("ListModel.View() should contain 'Author Name' header")
+	}
+}
+
+func TestListModel_View_WithAuthorName(t *testing.T) {
+	profiles := []profile.Profile{
+		{
+			Name:       "work",
+			Email:      "work@company.com",
+			AuthorName: "John Doe",
+			SSHKeyPath: "~/.ssh/id_rsa_work",
+		},
+		{
+			Name:       "personal",
+			Email:      "personal@email.com",
+			// AuthorName not set, should default to profile name
+		},
+	}
+
+	model := NewListModel(profiles)
+	view := model.View()
+
+	// Should show custom author name
+	if !strings.Contains(view, "John Doe") {
+		t.Error("ListModel.View() should display custom author name")
+	}
+
+	// Should show profile name as author name when AuthorName is not set
+	// The second profile should use "personal" as the author name
+	if !strings.Contains(view, "personal") {
+		t.Error("ListModel.View() should display profile name as author name when AuthorName is not set")
+	}
+
+	// Should show both profiles
+	if !strings.Contains(view, "work") {
+		t.Error("ListModel.View() should display work profile name")
+	}
+	if !strings.Contains(view, "work@company.com") {
+		t.Error("ListModel.View() should display work profile email")
+	}
+	if !strings.Contains(view, "personal@email.com") {
+		t.Error("ListModel.View() should display personal profile email")
+	}
+}
+
+func TestListModel_View_Headers(t *testing.T) {
+	profiles := []profile.Profile{
+		{Name: "test", Email: "test@example.com"},
+	}
+
+	model := NewListModel(profiles)
+	view := model.View()
+
+	// Check that all column headers are present
+	expectedHeaders := []string{"Name", "Author Name", "Email", "SSH Key Path"}
+	for _, header := range expectedHeaders {
+		if !strings.Contains(view, header) {
+			t.Errorf("ListModel.View() should contain header '%s'", header)
+		}
 	}
 }
 

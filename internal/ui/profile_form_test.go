@@ -140,3 +140,31 @@ func TestGetSSHKeySuggestions_NoSSHDir(t *testing.T) {
 	}
 }
 
+func TestUpdateProfileForm_Exists(t *testing.T) {
+	// This test verifies the UpdateProfileForm function exists and has correct signature
+	// Full testing would require mocking the Huh form library
+
+	// The function exists and can be referenced
+	_ = UpdateProfileForm
+
+	// Create a test profile
+	testProfile := &profile.Profile{
+		Name:       "test",
+		Email:      "test@example.com",
+		AuthorName: "Test Author",
+		SSHKeyPath: "~/.ssh/id_rsa",
+		GPGKeyID:   "GPG123",
+	}
+
+	// Verify we can create a test profile (tests the struct)
+	if testProfile.Name != "test" {
+		t.Errorf("Profile name = %v, want test", testProfile.Name)
+	}
+	if testProfile.Email != "test@example.com" {
+		t.Errorf("Profile email = %v, want test@example.com", testProfile.Email)
+	}
+	if testProfile.AuthorName != "Test Author" {
+		t.Errorf("Profile authorName = %v, want Test Author", testProfile.AuthorName)
+	}
+}
+

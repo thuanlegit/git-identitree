@@ -138,6 +138,53 @@ var profileDeleteCmd = &cobra.Command{
 	},
 }
 
+var profileUpdateCmd = &cobra.Command{
+	Use:   "update [name]",
+	Short: "Update an existing profile",
+	Long:  "Interactively update an existing Git profile with pre-populated values",
+	Args:  cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		manager, err := profile.NewManager()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		profiles := manager.ListProfiles()
+		var names []string
+		for _, p := range profiles {
+			names = append(names, p.Name)
+		}
+		return names, cobra.ShellCompDirectiveNoFileComp
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		profileName := args[0]
+
+		manager, err := profile.NewManager()
+		if err != nil {
+			return fmt.Errorf("failed to initialize profile manager: %w", err)
+		}
+
+		// Get the current profile
+		currentProfile, err := manager.GetProfile(profileName)
+		if err != nil {
+			return fmt.Errorf("profile not found: %w", err)
+		}
+
+		// Show update form with pre-populated values
+		updatedProfile, err := ui.UpdateProfileForm(currentProfile)
+		if err != nil {
+			return fmt.Errorf("failed to update profile: %w", err)
+		}
+
+		// Update the profile
+		if err := manager.UpdateProfile(profileName, *updatedProfile); err != nil {
+			return fmt.Errorf("failed to save profile: %w", err)
+		}
+
+		fmt.Printf("✓ Profile '%s' updated successfully\n", profileName)
+		return nil
+	},
+}
+
 var profileCmd = &cobra.Command{
 	Use:   "profile",
 	Short: "Manage profiles",
@@ -384,6 +431,7 @@ func init() {
 	// Profile subcommands
 	profileCmd.AddCommand(profileCreateCmd)
 	profileCmd.AddCommand(profileListCmd)
+	profileCmd.AddCommand(profileUpdateCmd)
 	profileCmd.AddCommand(profileDeleteCmd)
 
 	// SSH subcommands
