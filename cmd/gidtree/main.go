@@ -13,6 +13,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// version can be set at build time using -ldflags "-X main.version=x.y.z"
+var version = "1.0.0"
+
 var rootCmd = &cobra.Command{
 	Use:   "gidtree",
 	Short: "Git Identitree - Manage Git profiles with directory-based context switching",
@@ -305,6 +308,15 @@ var activateCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display the version of gidtree",
+	Long:  "Display the current version of the Git Identitree CLI",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("gidtree version %s\n", version)
+	},
+}
+
 func init() {
 	// Profile subcommands
 	profileCmd.AddCommand(profileCreateCmd)
@@ -323,6 +335,7 @@ func init() {
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(sshCmd)
 	rootCmd.AddCommand(activateCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 func main() {
