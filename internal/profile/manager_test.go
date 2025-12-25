@@ -374,8 +374,12 @@ func TestNewManager_LoadError(t *testing.T) {
 	}
 
 	// Create a file that causes read error (directory)
-	os.Remove(profilesPath)
-	os.MkdirAll(profilesPath, 0755)
+	if err := os.Remove(profilesPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove profiles file: %v", err)
+	}
+	if err := os.MkdirAll(profilesPath, 0755); err != nil {
+		t.Fatalf("Failed to create directory: %v", err)
+	}
 	defer os.RemoveAll(profilesPath)
 
 	_, err = NewManager()

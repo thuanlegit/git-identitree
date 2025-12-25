@@ -122,6 +122,14 @@ func TestLoadProfiles_InvalidYAML(t *testing.T) {
 	_, cleanup := setupTestEnv(t)
 	defer cleanup()
 
+	profilesDir, err := GetProfilesDir()
+	if err != nil {
+		t.Fatalf("GetProfilesDir() error = %v", err)
+	}
+	if err := os.MkdirAll(profilesDir, 0755); err != nil {
+		t.Fatalf("Failed to create profiles directory: %v", err)
+	}
+
 	profilesPath, err := GetProfilesPath()
 	if err != nil {
 		t.Fatalf("GetProfilesPath() error = %v", err)
@@ -129,7 +137,9 @@ func TestLoadProfiles_InvalidYAML(t *testing.T) {
 
 	// Create invalid YAML (tab character which is invalid in YAML)
 	invalidYAML := "- name: test\n\temail: test@example.com"
-	os.WriteFile(profilesPath, []byte(invalidYAML), 0644)
+	if err := os.WriteFile(profilesPath, []byte(invalidYAML), 0644); err != nil {
+		t.Fatalf("Failed to write invalid YAML: %v", err)
+	}
 
 	_, err = LoadProfiles()
 	if err == nil {
@@ -151,8 +161,12 @@ func TestSaveProfiles_WriteError(t *testing.T) {
 	}
 
 	// Remove directory and create a file with the same name
-	os.RemoveAll(profilesDir)
-	os.WriteFile(profilesDir, []byte("file"), 0644)
+	if err := os.RemoveAll(profilesDir); err != nil {
+		t.Fatalf("Failed to remove profiles directory: %v", err)
+	}
+	if err := os.WriteFile(profilesDir, []byte("file"), 0644); err != nil {
+		t.Fatalf("Failed to create file: %v", err)
+	}
 	defer os.RemoveAll(profilesDir)
 
 	profiles := []Profile{
@@ -213,8 +227,12 @@ func TestLoadProfiles_ReadError(t *testing.T) {
 	}
 
 	// Create directory with same name as file
-	os.Remove(profilesPath)
-	os.MkdirAll(profilesPath, 0755)
+	if err := os.Remove(profilesPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove profiles file: %v", err)
+	}
+	if err := os.MkdirAll(profilesPath, 0755); err != nil {
+		t.Fatalf("Failed to create directory: %v", err)
+	}
 	defer os.RemoveAll(profilesPath)
 
 	_, err = LoadProfiles()

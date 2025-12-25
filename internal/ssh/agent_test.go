@@ -266,7 +266,9 @@ func TestUnloadKey_InvalidFingerprintFormat(t *testing.T) {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
 	// Write invalid key content
-	tmpFile.WriteString("not a valid ssh key")
+	if _, err := tmpFile.WriteString("not a valid ssh key"); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
 	tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
 

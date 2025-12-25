@@ -34,8 +34,13 @@ func TestNewStatusModel(t *testing.T) {
 	defer cleanup()
 
 	// Initialize profiles
-	profilesDir, _ := profile.GetProfilesDir()
-	os.MkdirAll(profilesDir, 0755)
+	profilesDir, err := profile.GetProfilesDir()
+	if err != nil {
+		t.Fatalf("GetProfilesDir() error = %v", err)
+	}
+	if err := os.MkdirAll(profilesDir, 0755); err != nil {
+		t.Fatalf("Failed to create profiles directory: %v", err)
+	}
 
 	// Create a profile
 	manager, err := profile.NewManager()
@@ -53,7 +58,9 @@ func TestNewStatusModel(t *testing.T) {
 
 	// Create test directory and map it
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof, err := manager.GetProfile("test")
 	if err != nil {
@@ -65,9 +72,18 @@ func TestNewStatusModel(t *testing.T) {
 	}
 
 	// Change to test directory
-	originalDir, _ := os.Getwd()
-	os.Chdir(testDir)
-	defer os.Chdir(originalDir)
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+	if err := os.Chdir(testDir); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("Failed to restore directory: %v", err)
+		}
+	}()
 
 	// Create status model
 	model, err := NewStatusModel()
@@ -99,9 +115,18 @@ func TestNewStatusModel_NoMapping(t *testing.T) {
 	}
 	defer os.RemoveAll(testDir)
 
-	originalDir, _ := os.Getwd()
-	os.Chdir(testDir)
-	defer os.Chdir(originalDir)
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+	if err := os.Chdir(testDir); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("Failed to restore directory: %v", err)
+		}
+	}()
 
 	model, err := NewStatusModel()
 	if err != nil {
@@ -234,7 +259,9 @@ func TestStatusModel_View_GitConfigExists(t *testing.T) {
 
 	// Create git config
 	gitConfigPath := filepath.Join(tmpDir, ".gitconfig")
-	os.WriteFile(gitConfigPath, []byte("[user]\n"), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte("[user]\n"), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	model := &StatusModel{}
 	view := model.View()

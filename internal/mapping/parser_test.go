@@ -37,8 +37,12 @@ func TestParseMappings(t *testing.T) {
 	// Create a test git config with includeIf blocks
 	testDir1 := filepath.Join(tmpDir, "project1")
 	testDir2 := filepath.Join(tmpDir, "project2")
-	os.MkdirAll(testDir1, 0755)
-	os.MkdirAll(testDir2, 0755)
+	if err := os.MkdirAll(testDir1, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+	if err := os.MkdirAll(testDir2, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	normalizedDir1, _ := utils.NormalizePath(testDir1)
 	normalizedDir1 = utils.EnsureTrailingSlash(normalizedDir1)
@@ -143,7 +147,9 @@ func TestIsProfileMapped(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -180,7 +186,9 @@ func TestGetMappingForDirectory(t *testing.T) {
 
 	testDir := filepath.Join(tmpDir, "project")
 	subDir := filepath.Join(testDir, "subdir")
-	os.MkdirAll(subDir, 0755)
+	if err := os.MkdirAll(subDir, 0755); err != nil {
+		t.Fatalf("Failed to create subdirectory: %v", err)
+	}
 	
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
@@ -234,8 +242,12 @@ func TestParseMappings_ErrorReadingFile(t *testing.T) {
 	defer cleanup()
 
 	// Create a directory with the same name as the config file to cause read error
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	_, err := ParseMappings()
@@ -254,7 +266,9 @@ func TestParseMappings_ScannerError(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		largeContent = append(largeContent, []byte("[includeIf \"gitdir/i:/tmp/test\"]\n    path = ~/.gitconfig-test\n")...)
 	}
-	os.WriteFile(gitConfigPath, largeContent, 0644)
+	if err := os.WriteFile(gitConfigPath, largeContent, 0644); err != nil {
+		t.Fatalf("Failed to write large git config: %v", err)
+	}
 
 	mappings, err := ParseMappings()
 	// Should succeed but might take time
@@ -277,7 +291,9 @@ func TestParseMappings_InvalidIncludeIfFormat(t *testing.T) {
 [includeIf "invalid format"]
     path = ~/.gitconfig-test2
 `
-	os.WriteFile(gitConfigPath, []byte(configContent), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	mappings, err := ParseMappings()
 	if err != nil {
@@ -300,7 +316,9 @@ func TestParseMappings_NewSectionResets(t *testing.T) {
     name = Test
     path = ~/.gitconfig-test
 `
-	os.WriteFile(gitConfigPath, []byte(configContent), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	mappings, err := ParseMappings()
 	if err != nil {
@@ -351,8 +369,12 @@ func TestIsProfileMapped_ParseError(t *testing.T) {
 	defer cleanup()
 
 	// Create unreadable config (directory)
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	_, err := IsProfileMapped("test")
@@ -378,8 +400,12 @@ func TestGetMappingForDirectory_ParseError(t *testing.T) {
 	_ = tmpDir // Use tmpDir
 
 	// Create unreadable config
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	testDir := filepath.Join(tmpDir, "project")
@@ -397,9 +423,15 @@ func TestGetDirectoriesForProfile(t *testing.T) {
 	testDir1 := filepath.Join(tmpDir, "work/project1")
 	testDir2 := filepath.Join(tmpDir, "work/project2")
 	testDir3 := filepath.Join(tmpDir, "personal/project1")
-	os.MkdirAll(testDir1, 0755)
-	os.MkdirAll(testDir2, 0755)
-	os.MkdirAll(testDir3, 0755)
+	if err := os.MkdirAll(testDir1, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+	if err := os.MkdirAll(testDir2, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+	if err := os.MkdirAll(testDir3, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	normalizedDir1, _ := utils.NormalizePath(testDir1)
 	normalizedDir1 = utils.EnsureTrailingSlash(normalizedDir1)

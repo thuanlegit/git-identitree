@@ -75,7 +75,9 @@ func TestProfileListCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile directly
 	manager, err := profile.NewManager()
@@ -106,7 +108,9 @@ func TestProfileDeleteCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile
 	manager, err := profile.NewManager()
@@ -145,7 +149,9 @@ func TestMapCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile
 	manager, err := profile.NewManager()
@@ -164,7 +170,9 @@ func TestMapCommand(t *testing.T) {
 
 	// Create test directory
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	// Map profile to directory
 	prof, err := manager.GetProfile("test")
@@ -197,7 +205,9 @@ func TestUnmapCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile and map it
 	manager, err := profile.NewManager()
@@ -215,7 +225,9 @@ func TestUnmapCommand(t *testing.T) {
 	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof, err := manager.GetProfile("test")
 	if err != nil {
@@ -248,7 +260,9 @@ func TestStatusCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile and map it
 	manager, err := profile.NewManager()
@@ -266,7 +280,9 @@ func TestStatusCommand(t *testing.T) {
 	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof, err := manager.GetProfile("test")
 	if err != nil {
@@ -294,7 +310,9 @@ func TestActivateCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile and map it
 	manager, err := profile.NewManager()
@@ -312,7 +330,9 @@ func TestActivateCommand(t *testing.T) {
 	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof, err := manager.GetProfile("test")
 	if err != nil {
@@ -324,9 +344,18 @@ func TestActivateCommand(t *testing.T) {
 	}
 
 	// Change to test directory
-	originalDir, _ := os.Getwd()
-	os.Chdir(testDir)
-	defer os.Chdir(originalDir)
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+	if err := os.Chdir(testDir); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("Failed to restore directory: %v", err)
+		}
+	}()
 
 	// Test activate logic (get mapping for current directory)
 	m, err := mapping.GetMappingForDirectory(testDir)
@@ -349,7 +378,9 @@ func TestProfileDeleteWithMapping(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile and map it
 	manager, err := profile.NewManager()
@@ -367,7 +398,9 @@ func TestProfileDeleteWithMapping(t *testing.T) {
 	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof, err := manager.GetProfile("test")
 	if err != nil {
@@ -413,7 +446,9 @@ func TestGenerateProfileConfig_Content(t *testing.T) {
 	// Use internal function to generate config
 	// We'll test through the mapping package
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	if err := mapping.MapProfileToDirectory(prof, testDir); err != nil {
 		t.Fatalf("MapProfileToDirectory() error = %v", err)
@@ -474,7 +509,10 @@ func TestVersionCommand(t *testing.T) {
 
 			// Create a buffer to capture output
 			oldStdout := os.Stdout
-			r, w, _ := os.Pipe()
+			r, w, err := os.Pipe()
+			if err != nil {
+				t.Fatalf("Failed to create pipe: %v", err)
+			}
 			os.Stdout = w
 
 			// Execute version command
@@ -485,7 +523,7 @@ func TestVersionCommand(t *testing.T) {
 			os.Stdout = oldStdout
 
 			var buf bytes.Buffer
-			_, err := io.Copy(&buf, r)
+			_, err = io.Copy(&buf, r)
 			if err != nil {
 				t.Fatalf("Failed to read output: %v", err)
 			}
@@ -536,7 +574,9 @@ func TestProfileUpdateCommand(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	// Create a profile first
 	manager, err := profile.NewManager()
@@ -613,7 +653,9 @@ func TestProfileUpdateCommand_NonExistent(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	manager, err := profile.NewManager()
 	if err != nil {
@@ -648,7 +690,9 @@ func TestProfileUpdateCommand_SSHKeyValidation(t *testing.T) {
 
 	// Initialize
 	initCmd.SetArgs([]string{})
-	initCmd.Execute()
+	if err := initCmd.Execute(); err != nil {
+		t.Fatalf("initCmd.Execute() error = %v", err)
+	}
 
 	manager, err := profile.NewManager()
 	if err != nil {

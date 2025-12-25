@@ -85,7 +85,9 @@ func TestAddIncludeIfBlock(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -115,7 +117,9 @@ func TestAddIncludeIfBlock_Existing(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -157,7 +161,9 @@ func TestRemoveIncludeIfBlock(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -201,7 +207,9 @@ func TestMapProfileToDirectory(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	// Create a temporary SSH key file
 	tmpKey, err := os.CreateTemp("", "test-key-*")
@@ -247,7 +255,9 @@ func TestMapProfileToDirectory_Duplicate(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof1 := &profile.Profile{
 		Name:  "test1",
@@ -274,7 +284,9 @@ func TestUnmapDirectory(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	prof := &profile.Profile{
 		Name:  "test",
@@ -308,7 +320,9 @@ func TestAddIncludeIfBlock_UpdateExisting(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -345,7 +359,9 @@ func TestAddIncludeIfBlock_NoPathLine(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -380,7 +396,9 @@ func TestRemoveIncludeIfBlock_WithEmptyLineBefore(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -522,7 +540,9 @@ func TestAddIncludeIfBlock_UpdatePathLine(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -530,7 +550,9 @@ func TestAddIncludeIfBlock_UpdatePathLine(t *testing.T) {
 	existingConfig := `[includeIf "gitdir/i:` + normalizedDir + `"]
     path = ~/.gitconfig-old
 `
-	os.WriteFile(gitConfigPath, []byte(existingConfig), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte(existingConfig), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	newConfigPath := filepath.Join(tmpDir, ".gitconfig-new")
 	if err := addIncludeIfBlock(normalizedDir, newConfigPath); err != nil {
@@ -554,14 +576,18 @@ func TestAddIncludeIfBlock_NoPathLineAfterIncludeIf(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
 	// Create existing config with includeIf but no path line (at end of file)
 	existingConfig := `[includeIf "gitdir/i:` + normalizedDir + `"]
 `
-	os.WriteFile(gitConfigPath, []byte(existingConfig), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte(existingConfig), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	newConfigPath := filepath.Join(tmpDir, ".gitconfig-new")
 	if err := addIncludeIfBlock(normalizedDir, newConfigPath); err != nil {
@@ -586,7 +612,9 @@ func TestRemoveIncludeIfBlock_EmptyLineBefore(t *testing.T) {
 	defer cleanup()
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -597,7 +625,9 @@ func TestRemoveIncludeIfBlock_EmptyLineBefore(t *testing.T) {
 [includeIf "gitdir/i:` + normalizedDir + `"]
     path = ~/.gitconfig-test
 `
-	os.WriteFile(gitConfigPath, []byte(configContent), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	if err := removeIncludeIfBlock(normalizedDir); err != nil {
 		t.Fatalf("removeIncludeIfBlock() error = %v", err)
@@ -620,12 +650,18 @@ func TestAddIncludeIfBlock_ReadError(t *testing.T) {
 	defer cleanup()
 
 	// Create directory with same name as config file
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -643,17 +679,25 @@ func TestAddIncludeIfBlock_OpenError(t *testing.T) {
 	// Create a file that can't be opened (permissions)
 	// Note: This might not work on all systems
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
 	// Create config file
-	os.WriteFile(gitConfigPath, []byte("[user]\n"), 0644)
+	if err := os.WriteFile(gitConfigPath, []byte("[user]\n"), 0644); err != nil {
+		t.Fatalf("Failed to write git config: %v", err)
+	}
 
 	// Try to make it unreadable (this might not work on all systems)
 	// On Unix, we can try to remove read permission
 	if err := os.Chmod(gitConfigPath, 0000); err == nil {
-		defer os.Chmod(gitConfigPath, 0644)
+		defer func() {
+			if err := os.Chmod(gitConfigPath, 0644); err != nil {
+				t.Logf("Failed to restore permissions: %v", err)
+			}
+		}()
 
 		configPath := filepath.Join(tmpDir, ".gitconfig-test")
 		err := addIncludeIfBlock(normalizedDir, configPath)
@@ -670,12 +714,18 @@ func TestRemoveIncludeIfBlock_OpenError(t *testing.T) {
 	defer cleanup()
 
 	// Create directory with same name
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -694,10 +744,14 @@ func TestRemoveIncludeIfBlock_ScannerError(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		largeContent = append(largeContent, []byte("[includeIf \"gitdir/i:/tmp/test\"]\n    path = ~/.gitconfig-test\n")...)
 	}
-	os.WriteFile(gitConfigPath, largeContent, 0644)
+	if err := os.WriteFile(gitConfigPath, largeContent, 0644); err != nil {
+		t.Fatalf("Failed to write large git config: %v", err)
+	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 	normalizedDir, _ := utils.NormalizePath(testDir)
 	normalizedDir = utils.EnsureTrailingSlash(normalizedDir)
 
@@ -714,7 +768,9 @@ func TestWriteGitConfig_WriteError(t *testing.T) {
 
 	// Try to write to a path where parent is a file
 	invalidPath := filepath.Join(tmpDir, "file", "config")
-	os.WriteFile(filepath.Join(tmpDir, "file"), []byte("content"), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "file"), []byte("content"), 0644); err != nil {
+		t.Fatalf("Failed to write file: %v", err)
+	}
 
 	lines := []string{"[user]", "    name = Test"}
 	err := writeGitConfig(invalidPath, lines)
@@ -750,8 +806,12 @@ func TestMapProfileToDirectory_ParseError(t *testing.T) {
 	defer cleanup()
 
 	// Create unreadable config
-	os.Remove(gitConfigPath)
-	os.MkdirAll(gitConfigPath, 0755)
+	if err := os.Remove(gitConfigPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Failed to remove git config: %v", err)
+	}
+	if err := os.MkdirAll(gitConfigPath, 0755); err != nil {
+		t.Fatalf("Failed to create git config directory: %v", err)
+	}
 	defer os.RemoveAll(gitConfigPath)
 
 	prof := &profile.Profile{
@@ -760,7 +820,9 @@ func TestMapProfileToDirectory_ParseError(t *testing.T) {
 	}
 
 	testDir := filepath.Join(tmpDir, "project")
-	os.MkdirAll(testDir, 0755)
+	if err := os.MkdirAll(testDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
 
 	err := MapProfileToDirectory(prof, testDir)
 	if err == nil {
