@@ -31,7 +31,8 @@ func getSSHKeySuggestions() []string {
 		// Filter for common private key files (exclude .pub files)
 		if !strings.HasSuffix(name, ".pub") &&
 			(strings.HasPrefix(name, "id_") || name == "github" || name == "gitlab" || name == "bitbucket") {
-			suggestions = append(suggestions, filepath.Join("~/.ssh", name))
+			// Use forward slashes for cross-platform compatibility
+			suggestions = append(suggestions, "~/.ssh/"+name)
 		}
 	}
 

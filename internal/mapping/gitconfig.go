@@ -107,6 +107,8 @@ func addIncludeIfBlock(dir, configPath string) error {
 	home, err := utils.GetHomeDir()
 	if err == nil && strings.HasPrefix(configPath, home) {
 		configPath = strings.Replace(configPath, home, "~", 1)
+		// Convert to forward slashes for cross-platform compatibility
+		configPath = filepath.ToSlash(configPath)
 	}
 
 	// Read existing content
