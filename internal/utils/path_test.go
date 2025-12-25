@@ -172,19 +172,41 @@ func TestNormalizePath_TildeInMiddle(t *testing.T) {
 }
 
 func TestNormalizePath_HomeDirError(t *testing.T) {
-	// Save original HOME
+	// Save original HOME and Windows env vars
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
 		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
+		}
 	}()
 
-	// Set invalid HOME
+	// Set invalid HOME and clear Windows home vars
 	if err := os.Setenv("HOME", ""); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
 	}
-	
+	if err := os.Setenv("USERPROFILE", ""); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
+	}
+
 	// Clear the home directory cache if any
 	// Test that tilde expansion fails gracefully
 	_, err := NormalizePath("~/test")
@@ -279,7 +301,7 @@ func TestExpandPath(t *testing.T) {
 		{
 			name:     "tilde with slash",
 			input:    "~/",
-			expected: home + "/",
+			expected: home + string(filepath.Separator),
 			wantErr:  false,
 		},
 		{
@@ -323,17 +345,39 @@ func TestExpandPath(t *testing.T) {
 }
 
 func TestExpandPath_ErrorHandling(t *testing.T) {
-	// Save original HOME
+	// Save original HOME and Windows env vars
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
 		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
+		}
 	}()
 
-	// Set invalid HOME (empty string)
+	// Set invalid HOME and clear Windows home vars
 	if err := os.Setenv("HOME", ""); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USERPROFILE", ""); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
 	}
 
 	// Test that tilde expansion handles error

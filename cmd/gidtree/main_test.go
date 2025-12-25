@@ -18,15 +18,49 @@ func setupCLITestEnv(t *testing.T) (string, func()) {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
 
+	// On Windows, resolve short paths (e.g., RUNNER~1) to long paths
+	// This ensures consistent path comparisons in tests
+	tmpDir, err = filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		// If symlink resolution fails, continue with original path
+		// This shouldn't happen for newly created directories
+		t.Logf("Warning: Failed to resolve tmpDir symlinks: %v", err)
+	}
+
 	// Override home directory for testing
+	// On Windows, os.UserHomeDir() uses USERPROFILE, HOMEDRIVE+HOMEPATH, or HOME
+	// We need to override all of them to ensure tests work correctly
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	if err := os.Setenv("HOME", tmpDir); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USERPROFILE", tmpDir); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	// Clear HOMEDRIVE and HOMEPATH to prevent them from interfering
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
 	}
 
 	cleanup := func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
 		}
 		if err := os.RemoveAll(tmpDir); err != nil {
 			t.Logf("Failed to remove temp directory: %v", err)

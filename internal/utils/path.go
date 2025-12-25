@@ -40,7 +40,8 @@ func EnsureTrailingSlash(path string) string {
 	if path == "" {
 		return path
 	}
-	if !strings.HasSuffix(path, string(filepath.Separator)) {
+	// Check for both forward slash and backslash to handle mixed paths
+	if !strings.HasSuffix(path, "/") && !strings.HasSuffix(path, "\\") {
 		return path + string(filepath.Separator)
 	}
 	return path
@@ -64,8 +65,24 @@ func ExpandPath(path string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		// Replace only the first ~ with home directory
-		path = strings.Replace(path, "~", home, 1)
+
+		// Handle different cases of tilde usage
+		if path == "~" {
+			return home, nil
+		}
+
+		// Remove the tilde and the following separator (if present)
+		rest := strings.TrimPrefix(path, "~")
+		rest = strings.TrimPrefix(rest, "/")
+		rest = strings.TrimPrefix(rest, "\\")
+
+		if rest == "" {
+			// Path was "~/" or "~\", return home with trailing separator
+			return home + string(filepath.Separator), nil
+		}
+
+		// Join home with the rest of the path using OS-specific separators
+		return filepath.Join(home, rest), nil
 	}
 
 	return path, nil

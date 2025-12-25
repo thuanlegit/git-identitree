@@ -524,17 +524,39 @@ func TestUnmapDirectory_NonExistent(t *testing.T) {
 }
 
 func TestGetGitConfigPath_Error(t *testing.T) {
-	// Save original HOME
+	// Save original HOME and Windows env vars
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
 		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
+		}
 	}()
 
-	// Set invalid HOME to test error path
+	// Set invalid HOME and clear Windows home vars to test error path
 	if err := os.Setenv("HOME", ""); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USERPROFILE", ""); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
 	}
 
 	// This should fail because we can't get home directory
@@ -797,17 +819,39 @@ func TestWriteGitConfig_WriteError(t *testing.T) {
 }
 
 func TestGenerateProfileConfig_HomeDirError(t *testing.T) {
-	// Save original HOME
+	// Save original HOME and Windows env vars
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
 		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
+		}
 	}()
 
-	// Set invalid HOME
+	// Set invalid HOME and clear Windows home vars
 	if err := os.Setenv("HOME", ""); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USERPROFILE", ""); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
 	}
 
 	prof := &profile.Profile{
@@ -855,17 +899,39 @@ func TestMapProfileToDirectory_ParseError(t *testing.T) {
 }
 
 func TestMapProfileToDirectory_GenerateConfigError(t *testing.T) {
-	// Save original HOME
+	// Save original HOME and Windows env vars
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
 		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
+		}
 	}()
 
-	// Set invalid HOME
+	// Set invalid HOME and clear Windows home vars
 	if err := os.Setenv("HOME", ""); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
+	}
+	if err := os.Setenv("USERPROFILE", ""); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
 	}
 
 	prof := &profile.Profile{

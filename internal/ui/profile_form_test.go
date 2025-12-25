@@ -63,6 +63,13 @@ func TestGetSSHKeySuggestions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
+
+	// On Windows, resolve short paths (e.g., RUNNER~1) to long paths
+	tmpDir, err = filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Logf("Warning: Failed to resolve tmpDir symlinks: %v", err)
+	}
+
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
 			t.Logf("Failed to remove temp directory: %v", err)
@@ -70,13 +77,37 @@ func TestGetSSHKeySuggestions(t *testing.T) {
 	}()
 
 	// Override HOME to use temp directory
+	// On Windows, os.UserHomeDir() uses USERPROFILE, HOMEDRIVE+HOMEPATH, or HOME
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	if err := os.Setenv("HOME", tmpDir); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
 	}
+	if err := os.Setenv("USERPROFILE", tmpDir); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
+	}
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
 		}
 	}()
 
@@ -134,6 +165,13 @@ func TestGetSSHKeySuggestions_NoSSHDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
+
+	// On Windows, resolve short paths (e.g., RUNNER~1) to long paths
+	tmpDir, err = filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Logf("Warning: Failed to resolve tmpDir symlinks: %v", err)
+	}
+
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
 			t.Logf("Failed to remove temp directory: %v", err)
@@ -141,13 +179,37 @@ func TestGetSSHKeySuggestions_NoSSHDir(t *testing.T) {
 	}()
 
 	// Override HOME to use temp directory (without .ssh)
+	// On Windows, os.UserHomeDir() uses USERPROFILE, HOMEDRIVE+HOMEPATH, or HOME
 	originalHome := os.Getenv("HOME")
+	originalUserProfile := os.Getenv("USERPROFILE")
+	originalHomeDrive := os.Getenv("HOMEDRIVE")
+	originalHomePath := os.Getenv("HOMEPATH")
+
 	if err := os.Setenv("HOME", tmpDir); err != nil {
 		t.Fatalf("Failed to set HOME: %v", err)
 	}
+	if err := os.Setenv("USERPROFILE", tmpDir); err != nil {
+		t.Fatalf("Failed to set USERPROFILE: %v", err)
+	}
+	if err := os.Setenv("HOMEDRIVE", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEDRIVE: %v", err)
+	}
+	if err := os.Setenv("HOMEPATH", ""); err != nil {
+		t.Fatalf("Failed to clear HOMEPATH: %v", err)
+	}
+
 	defer func() {
 		if err := os.Setenv("HOME", originalHome); err != nil {
 			t.Logf("Failed to restore HOME: %v", err)
+		}
+		if err := os.Setenv("USERPROFILE", originalUserProfile); err != nil {
+			t.Logf("Failed to restore USERPROFILE: %v", err)
+		}
+		if err := os.Setenv("HOMEDRIVE", originalHomeDrive); err != nil {
+			t.Logf("Failed to restore HOMEDRIVE: %v", err)
+		}
+		if err := os.Setenv("HOMEPATH", originalHomePath); err != nil {
+			t.Logf("Failed to restore HOMEPATH: %v", err)
 		}
 	}()
 
