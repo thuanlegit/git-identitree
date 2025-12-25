@@ -1,6 +1,7 @@
 package mapping
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -385,6 +386,115 @@ func TestGetMappingForDirectory_ParseError(t *testing.T) {
 	_, err := GetMappingForDirectory(testDir)
 	if err == nil {
 		t.Error("GetMappingForDirectory() should fail when config is unreadable")
+	}
+}
+
+func TestGetDirectoriesForProfile(t *testing.T) {
+	tmpDir, gitConfigPath, cleanup := setupMappingTestEnv(t)
+	defer cleanup()
+
+	// Create test directories
+	testDir1 := filepath.Join(tmpDir, "work/project1")
+	testDir2 := filepath.Join(tmpDir, "work/project2")
+	testDir3 := filepath.Join(tmpDir, "personal/project1")
+	os.MkdirAll(testDir1, 0755)
+	os.MkdirAll(testDir2, 0755)
+	os.MkdirAll(testDir3, 0755)
+
+	normalizedDir1, _ := utils.NormalizePath(testDir1)
+	normalizedDir1 = utils.EnsureTrailingSlash(normalizedDir1)
+	normalizedDir2, _ := utils.NormalizePath(testDir2)
+	normalizedDir2 = utils.EnsureTrailingSlash(normalizedDir2)
+	normalizedDir3, _ := utils.NormalizePath(testDir3)
+	normalizedDir3 = utils.EnsureTrailingSlash(normalizedDir3)
+
+	// Create config with multiple mappings
+	configContent := fmt.Sprintf(`[includeIf "gitdir/i:%s"]
+    path = ~/.gitconfig-work
+
+[includeIf "gitdir/i:%s"]
+    path = ~/.gitconfig-work
+
+[includeIf "gitdir/i:%s"]
+    path = ~/.gitconfig-personal
+`, normalizedDir1, normalizedDir2, normalizedDir3)
+
+	if err := os.WriteFile(gitConfigPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("Failed to write test config: %v", err)
+	}
+
+	// Test getting directories for work profile
+	workDirs, err := GetDirectoriesForProfile("work")
+	if err != nil {
+		t.Fatalf("GetDirectoriesForProfile() error = %v", err)
+	}
+
+	if len(workDirs) != 2 {
+		t.Errorf("GetDirectoriesForProfile('work') returned %d directories, want 2", len(workDirs))
+	}
+
+	// Verify the directories are correct
+	foundDir1 := false
+	foundDir2 := false
+	for _, dir := range workDirs {
+		if dir == normalizedDir1 {
+			foundDir1 = true
+		}
+		if dir == normalizedDir2 {
+			foundDir2 = true
+		}
+	}
+
+	if !foundDir1 || !foundDir2 {
+		t.Errorf("GetDirectoriesForProfile('work') returned unexpected directories: %v", workDirs)
+	}
+
+	// Test getting directories for personal profile
+	personalDirs, err := GetDirectoriesForProfile("personal")
+	if err != nil {
+		t.Fatalf("GetDirectoriesForProfile() error = %v", err)
+	}
+
+	if len(personalDirs) != 1 {
+		t.Errorf("GetDirectoriesForProfile('personal') returned %d directories, want 1", len(personalDirs))
+	}
+
+	if len(personalDirs) > 0 && personalDirs[0] != normalizedDir3 {
+		t.Errorf("GetDirectoriesForProfile('personal') = %v, want %v", personalDirs[0], normalizedDir3)
+	}
+}
+
+func TestGetDirectoriesForProfile_NoMappings(t *testing.T) {
+	_, _, cleanup := setupMappingTestEnv(t)
+	defer cleanup()
+
+	// Test with profile that has no mappings
+	dirs, err := GetDirectoriesForProfile("nonexistent")
+	if err != nil {
+		t.Fatalf("GetDirectoriesForProfile() error = %v", err)
+	}
+
+	if len(dirs) != 0 {
+		t.Errorf("GetDirectoriesForProfile('nonexistent') returned %d directories, want 0", len(dirs))
+	}
+}
+
+func TestGetDirectoriesForProfile_EmptyConfig(t *testing.T) {
+	_, gitConfigPath, cleanup := setupMappingTestEnv(t)
+	defer cleanup()
+
+	// Create empty config
+	if err := os.WriteFile(gitConfigPath, []byte(""), 0644); err != nil {
+		t.Fatalf("Failed to write test config: %v", err)
+	}
+
+	dirs, err := GetDirectoriesForProfile("test")
+	if err != nil {
+		t.Fatalf("GetDirectoriesForProfile() error = %v", err)
+	}
+
+	if len(dirs) != 0 {
+		t.Errorf("GetDirectoriesForProfile() with empty config returned %d directories, want 0", len(dirs))
 	}
 }
 

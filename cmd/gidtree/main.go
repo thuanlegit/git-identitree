@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"git-identitree/internal/mapping"
 	"git-identitree/internal/profile"
@@ -14,7 +16,7 @@ import (
 )
 
 // version can be set at build time using -ldflags "-X main.version=x.y.z"
-var version = "1.1.0"
+var version = "1.2.1"
 
 var rootCmd = &cobra.Command{
 	Use:   "gidtree",
@@ -102,7 +104,7 @@ var profileListCmd = &cobra.Command{
 var profileDeleteCmd = &cobra.Command{
 	Use:   "delete [name]",
 	Short: "Delete a profile",
-	Long:  "Delete a profile. Will fail if the profile is mapped to any directories.",
+	Long:  "Delete a profile. If mapped to directories, will prompt to unmap them first.",
 	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		manager, err := profile.NewManager()
@@ -124,16 +126,58 @@ var profileDeleteCmd = &cobra.Command{
 			return fmt.Errorf("failed to initialize profile manager: %w", err)
 		}
 
-		// Check if profile is mapped
+		// Check if profile exists
+		_, err = manager.GetProfile(profileName)
+		if err != nil {
+			return fmt.Errorf("profile not found: %w", err)
+		}
+
+		// Get all directories mapped to this profile
+		directories, err := mapping.GetDirectoriesForProfile(profileName)
+		if err != nil {
+			return fmt.Errorf("failed to check profile mappings: %w", err)
+		}
+
+		// If profile is mapped, ask user if they want to unmap
+		if len(directories) > 0 {
+			fmt.Printf("Profile '%s' is mapped to the following directories:\n", profileName)
+			for _, dir := range directories {
+				fmt.Printf("  - %s\n", dir)
+			}
+			fmt.Print("\nDo you want to unmap all directories and delete the profile? (y/N): ")
+
+			reader := bufio.NewReader(os.Stdin)
+			response, err := reader.ReadString('\n')
+			if err != nil {
+				return fmt.Errorf("failed to read input: %w", err)
+			}
+
+			response = strings.TrimSpace(strings.ToLower(response))
+			if response != "y" && response != "yes" {
+				fmt.Println("Delete cancelled.")
+				return nil
+			}
+
+			// Unmap all directories
+			fmt.Println("\nUnmapping directories...")
+			for _, dir := range directories {
+				if err := mapping.UnmapDirectory(dir); err != nil {
+					return fmt.Errorf("failed to unmap directory '%s': %w", dir, err)
+				}
+				fmt.Printf("  ✓ Unmapped: %s\n", dir)
+			}
+		}
+
+		// Delete the profile (no need to check mappings again)
 		isMapped := func(name string) (bool, error) {
-			return mapping.IsProfileMapped(name)
+			return false, nil // Already handled above
 		}
 
 		if err := manager.DeleteProfile(profileName, isMapped); err != nil {
 			return fmt.Errorf("failed to delete profile: %w", err)
 		}
 
-		fmt.Printf("✓ Profile '%s' deleted successfully\n", profileName)
+		fmt.Printf("\n✓ Profile '%s' deleted successfully\n", profileName)
 		return nil
 	},
 }

@@ -156,3 +156,20 @@ func GetMappingForDirectory(dir string) (*Mapping, error) {
 	return nil, nil
 }
 
+// GetDirectoriesForProfile returns all directories mapped to a specific profile.
+func GetDirectoriesForProfile(profileName string) ([]string, error) {
+	mappings, err := ParseMappings()
+	if err != nil {
+		return nil, err
+	}
+
+	var directories []string
+	for _, m := range mappings {
+		if m.Profile == profileName {
+			directories = append(directories, m.Directory)
+		}
+	}
+
+	return directories, nil
+}
+
