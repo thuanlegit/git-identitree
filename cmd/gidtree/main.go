@@ -6,10 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"git-identitree/internal/mapping"
-	"git-identitree/internal/profile"
-	"git-identitree/internal/ssh"
-	"git-identitree/internal/ui"
+	"github.com/thuanlegit/git-identitree/internal/mapping"
+	"github.com/thuanlegit/git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/ssh"
+	"github.com/thuanlegit/git-identitree/internal/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"

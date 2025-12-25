@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/profile"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

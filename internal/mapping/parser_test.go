@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 func setupMappingTestEnv(t *testing.T) (string, string, func()) {

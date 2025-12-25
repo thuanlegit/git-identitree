@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git-identitree/internal/mapping"
-	"git-identitree/internal/profile"
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/mapping"
+	"github.com/thuanlegit/git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 	"github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )

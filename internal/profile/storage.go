@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 	"gopkg.in/yaml.v3"
 )
 

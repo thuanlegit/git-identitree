@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"git-identitree/internal/profile"
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 // LoadKey adds an SSH key to the SSH agent.

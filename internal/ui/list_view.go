@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/profile"
 	"github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )

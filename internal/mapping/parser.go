@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 // Mapping represents a directory-to-profile mapping.

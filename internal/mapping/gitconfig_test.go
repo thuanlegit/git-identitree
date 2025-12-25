@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"git-identitree/internal/profile"
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 func TestGenerateProfileConfig(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"git-identitree/internal/profile"
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 // MapProfileToDirectory creates a profile-specific git config and adds an includeIf block.

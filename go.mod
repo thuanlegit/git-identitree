@@ -1,4 +1,4 @@
-module git-identitree
+module github.com/thuanlegit/git-identitree
 
 go 1.24.0
 

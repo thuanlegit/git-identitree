@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/profile"
 	"github.com/charmbracelet/huh"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"git-identitree/internal/utils"
+	"github.com/thuanlegit/git-identitree/internal/utils"
 )
 
 // Manager handles profile CRUD operations.

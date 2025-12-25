@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/profile"
 )
 
 // Note: CreateProfileForm is an interactive form that requires user input.

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"git-identitree/internal/mapping"
-	"git-identitree/internal/profile"
+	"github.com/thuanlegit/git-identitree/internal/mapping"
+	"github.com/thuanlegit/git-identitree/internal/profile"
 )
 
 func setupCLITestEnv(t *testing.T) (string, func()) {
