@@ -9,7 +9,7 @@ import (
 
 // CreateProfileForm creates an interactive form for profile creation.
 func CreateProfileForm() (*profile.Profile, error) {
-	var name, email, sshKeyPath, gpgKeyID string
+	var name, email, authorName, sshKeyPath, gpgKeyID string
 
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -34,6 +34,10 @@ func CreateProfileForm() (*profile.Profile, error) {
 					return nil
 				}),
 			huh.NewInput().
+				Title("Author Name").
+				Description("Git author name (optional, defaults to profile name)").
+				Value(&authorName),
+			huh.NewInput().
 				Title("SSH Key Path").
 				Description("Path to SSH private key (optional)").
 				Value(&sshKeyPath),
@@ -51,6 +55,7 @@ func CreateProfileForm() (*profile.Profile, error) {
 	prof := &profile.Profile{
 		Name:       name,
 		Email:      email,
+		AuthorName: authorName,
 		SSHKeyPath: sshKeyPath,
 		GPGKeyID:   gpgKeyID,
 	}

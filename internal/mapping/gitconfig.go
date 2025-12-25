@@ -74,7 +74,7 @@ func generateProfileConfig(prof *profile.Profile) (string, error) {
 
 	var config strings.Builder
 	config.WriteString("[user]\n")
-	config.WriteString(fmt.Sprintf("    name = %s\n", prof.Name))
+	config.WriteString(fmt.Sprintf("    name = %s\n", prof.GetAuthorName()))
 	config.WriteString(fmt.Sprintf("    email = %s\n", prof.Email))
 
 	if prof.GPGKeyID != "" {
